@@ -1,0 +1,56 @@
+%%%% A set of commands for biblatex / biber to reproduce bibstyle of Genetics
+\usepackage[
+backend=biber,
+style=authoryear,
+natbib=true, %% for citep, citet
+sorting=nyt,
+block=none,
+isbn=false,
+eprint=false,
+clearlang=true,
+maxcitenames=2,
+mincitenames=1,
+maxbibnames=99,
+uniquename=false,
+uniquelist=false,
+firstinits=true,
+]{biblatex}
+\usepackage{xpatch}
+%% remove pp. or p. for articles just add : before
+\DeclareFieldFormat[article]{pages}{#1}%
+\renewcommand\bibpagespunct{\ifentrytype{article}{\addcolon}{\addcomma}\space}
+%% Regular title
+\DeclareFieldFormat[article]{title}{#1}%
+\DeclareFieldFormat[misc]{title}{#1}%
+%% No parenthesis for year
+\xpatchbibmacro{date+extrayear}{%
+  \printtext[parens]%
+}{%
+  \setunit{\addperiod\space}%
+  \printtext%
+}{}{}
+%% Remove In: for journals
+\renewbibmacro{in:}{%
+ \ifentrytype{article}{}{\printtext{\bibstring{in}\intitlepunct}}}
+%% Format vol (num)
+\renewbibmacro*{volume+number+eid}{%
+  \printfield{volume}%
+  % \printfield[parens]{number}% %% uncomment for vol(number)
+  % \setunit{\addcomma\space}%
+  % \printfield{eid}
+}
+%% Regular journaltitle
+\DeclareFieldFormat[article]{journaltitle}{#1}%
+%% get rid of language field
+\AtEveryBibitem{%
+%  \clearlist{language} %% remove language altogether, even if
+%  diff. from main text
+  \clearlist{Note}
+  \ifentrytype{misc}{% %% use @misc for datasets and web resources
+  }{%
+    \clearfiled{doi}%
+    \clearfield{url}%
+    \clearfield{urldate}%
+  }%
+}
+\addbibresource{refs.bib}
